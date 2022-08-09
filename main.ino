@@ -16,6 +16,7 @@ const int VOLTAGE_PIN = A0;
 const float V_ADJUST = 1.005;
 //------ Constants and States ---------------------------------------------------
 const int MODE_PIN = 2;
+const int CHARGE_OR_DISCHARGE_PIN = 3;
 const float ABSOLUTE = 1.0;
 const float TOLERANCE = (ABSOLUTE + .5);
 const int RESOLUTION = 100;
@@ -23,15 +24,31 @@ const String DENOISE = "DENOISE";
 const String MEASURE = "MEASURE";
 float voltageNoise = 0;
 float ampereNoise = 0;
-int ledState = LOW;
+bool ledState = false;
+bool tT = false; // this is only for test a relay
+float voltageMem[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+
+//------ Functions --------------------------------------------------------------
+
+void inputVolts(float voltage)
+{
+  for (size_t i = 1; i < 10; i++)
+    voltageMem[i - 1] = voltageMem[i];
+  voltageMem[9] = voltage;
+}
+
+float getVolts(float &voltage)
+{
+  voltage = 0;
+  for (size_t i = 0; i < 10; i++)
+    voltage += voltageMem[i];
+  return voltage /= 10;
+}
 
 void blink()
 {
-  if (ledState == LOW)
-    ledState = HIGH;
-  else
-    ledState = LOW;
-  digitalWrite(LED_BUILTIN, ledState);
+  ledState = !ledState;
+  digitalWrite(LED_BUILTIN, ledState ? HIGH : LOW);
 }
 
 float maxVoltage() { return V1 / (R2 / (R1 + R2)); }
@@ -69,15 +86,23 @@ String getMeasurement(int resolution, String mode)
       avgV = 0.0;
     if (avgA < ampereNoise)
       avgA = 0.0;
+    inputVolts(avgV);
   }
   // This message was thought to be a JSON message to be captured by a node.js server
   return String("{\"mode\":\"" + mode + "\",\"voltage\":" + String(avgV, 2) + ",\"mAmps\":" + String(avgA, 2) + ",\"watts\":" + String(((avgV * avgA) / 1000), 2) + ",\"noiseWatts\":" + String((voltageNoise * ampereNoise) / 1000, 2) + "}");
+}
+
+void ticToc() // this is only for test a relay
+{
+  tT = !tT;
+  digitalWrite(CHARGE_OR_DISCHARGE_PIN, tT ? HIGH : LOW);
 }
 
 void setup()
 {
   pinMode(LED_BUILTIN, OUTPUT);
   pinMode(MODE_PIN, INPUT);
+  pinMode(CHARGE_OR_DISCHARGE_PIN, OUTPUT);
   ACS.autoMidPoint();
   Serial.begin(115200);
   Serial.println("Voltaje máximo: " + String(maxVoltage()));
@@ -88,4 +113,5 @@ void setup()
 void loop()
 {
   Serial.println(getMeasurement(RESOLUTION, digitalRead(MODE_PIN) ? DENOISE : MEASURE));
+  ticToc(); // this is only for test a relay
 }
