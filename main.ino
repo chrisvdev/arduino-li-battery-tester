@@ -16,7 +16,7 @@ float V1 = 4.5;
 const float R1 = 996500; // 1M
 const float R2 = 99200;  // 100K
 const int VOLTAGE_PIN = A0;
-const float V_ADJUST = 0.85;
+const float V_ADJUST = 0.82;
 
 //------ Constants and States ---------------------------------------------------
 
