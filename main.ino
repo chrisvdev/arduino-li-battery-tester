@@ -1,5 +1,17 @@
-//------ Ammeter ---------------------------------------------------------------
+/*
+Notes:
 
+This require an regulated power supply. The power supply must be regulated
+to 5V limited to 100mA.
+
+Use 2 relays to control the power supply and the discharge circuit.
+the voltmeter is a simple power divider to measure the voltage and
+the ammeter is a ACS712 based module.
+
+The discharge circuit can be any type of circuit of your choice.
+
+*/
+//------ Ammeter ---------------------------------------------------------------
 #include "ACS712.h"
 // Arduino UNO has 5.0 volt with a max ADC value of 1023 steps
 // ACS712 5A  uses 185 mV per A
