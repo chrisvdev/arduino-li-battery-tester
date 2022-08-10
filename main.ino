@@ -1,4 +1,5 @@
 //------ Ammeter ---------------------------------------------------------------
+
 #include "ACS712.h"
 // Arduino UNO has 5.0 volt with a max ADC value of 1023 steps
 // ACS712 5A  uses 185 mV per A
@@ -8,42 +9,49 @@
 // ACS712  ACS(25, 5.0, 4095, 185);
 ACS712 ACS(A1, 5.0, 1023, 66);
 const float ACS_ADJUST = 0.9;
+
 //------ Voltmeter --------------------------------------------------------------
-const float V1 = 4.95;
+
+float V1 = 4.5;
 const float R1 = 996500; // 1M
 const float R2 = 99200;  // 100K
 const int VOLTAGE_PIN = A0;
-const float V_ADJUST = 1.005;
+const float V_ADJUST = 0.85;
+
 //------ Constants and States ---------------------------------------------------
+
 const int MODE_PIN = 2;
 const int CHARGE_OR_DISCHARGE_PIN = 3;
+const int BATTERY_PIN = 4;
+const int NO = LOW;
+const int NC = HIGH;
 const float ABSOLUTE = 1.0;
 const float TOLERANCE = (ABSOLUTE + .5);
 const int RESOLUTION = 100;
-const String DENOISE = "DENOISE";
-const String MEASURE = "MEASURE";
+const bool CHARGE = true;
+const bool DISCHARGE = false;
+const bool CONNECT = true;
+const bool DISCONNECT = false;
+enum states
+{
+  DENOISE,
+  CHARGING,
+  DISCHARGING,
+  FINISHED,
+  MEASURE
+};
+const int MEMORY_SIZE = 10;
+int state = DENOISE;
+float voltageMem[MEMORY_SIZE];
+float currentMem[MEMORY_SIZE];
 float voltageNoise = 0;
 float ampereNoise = 0;
+int count = 0;
 bool ledState = false;
-bool tT = false; // this is only for test a relay
-float voltageMem[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
 //------ Functions --------------------------------------------------------------
 
-void inputVolts(float voltage)
-{
-  for (size_t i = 1; i < 10; i++)
-    voltageMem[i - 1] = voltageMem[i];
-  voltageMem[9] = voltage;
-}
-
-float getVolts(float &voltage)
-{
-  voltage = 0;
-  for (size_t i = 0; i < 10; i++)
-    voltage += voltageMem[i];
-  return voltage /= 10;
-}
+float maxVoltage() { return V1 / (R2 / (R1 + R2)); }
 
 void blink()
 {
@@ -51,7 +59,44 @@ void blink()
   digitalWrite(LED_BUILTIN, ledState ? HIGH : LOW);
 }
 
-float maxVoltage() { return V1 / (R2 / (R1 + R2)); }
+void inputVolts(float voltage)
+{
+  for (size_t i = 1; i < MEMORY_SIZE; i++)
+    voltageMem[i - 1] = voltageMem[i];
+  voltageMem[MEMORY_SIZE - 1] = voltage;
+}
+
+float getVolts()
+{
+  float voltage = 0;
+  for (size_t i = 0; i < MEMORY_SIZE; i++)
+    voltage += voltageMem[i];
+  return voltage / MEMORY_SIZE;
+}
+
+void inputAmperes(float ampere)
+{
+  for (size_t i = 1; i < MEMORY_SIZE; i++)
+    currentMem[i - 1] = currentMem[i];
+  currentMem[MEMORY_SIZE - 1] = ampere;
+}
+
+float getAmperes()
+{
+  float ampere = 0;
+  for (size_t i = 0; i < MEMORY_SIZE; i++)
+    ampere += currentMem[i];
+  return ampere / MEMORY_SIZE;
+}
+
+void clearMemory()
+{
+  for (size_t i = 0; i < MEMORY_SIZE; i++)
+  {
+    voltageMem[i] = 0;
+    currentMem[i] = 0;
+  }
+}
 
 float volts() { return (analogRead(VOLTAGE_PIN) * (V1 / 1023.0)) / (R2 / (R1 + R2)); }
 
@@ -59,9 +104,12 @@ float getVoltage() { return volts() * V_ADJUST; }
 
 float getAmperage() { return ACS.mA_DC() * ACS_ADJUST; }
 
-String getMeasurement(int resolution, String mode)
+void battery(bool connected) { digitalWrite(BATTERY_PIN, connected ? NO : NC); }
+
+void chargeOrDischarge(bool charge) { digitalWrite(CHARGE_OR_DISCHARGE_PIN, charge ? NO : NC); }
+
+void getMeasurement(int resolution, int mode)
 {
-  String message = "";
   float avgV = 0;
   float avgA = 0;
   for (int i = 0; i < resolution; i++)
@@ -84,34 +132,96 @@ String getMeasurement(int resolution, String mode)
   {
     if (avgV < voltageNoise)
       avgV = 0.0;
+    inputVolts(avgV);
     if (avgA < ampereNoise)
       avgA = 0.0;
-    inputVolts(avgV);
+    inputAmperes(avgA);
   }
-  // This message was thought to be a JSON message to be captured by a node.js server
-  return String("{\"mode\":\"" + mode + "\",\"voltage\":" + String(avgV, 2) + ",\"mAmps\":" + String(avgA, 2) + ",\"watts\":" + String(((avgV * avgA) / 1000), 2) + ",\"noiseWatts\":" + String((voltageNoise * ampereNoise) / 1000, 2) + "}");
 }
 
-void ticToc() // this is only for test a relay
+String denoise()
 {
-  tT = !tT;
-  digitalWrite(CHARGE_OR_DISCHARGE_PIN, tT ? HIGH : LOW);
+  if (count < 5)
+  {
+    getMeasurement(RESOLUTION, DENOISE);
+    count++;
+  }
+  else
+  {
+    count = 0;
+    state = CHARGING;
+  }
+  return ",\"voltageNoise\":" + String(voltageNoise) + ",\"ampereNoise\":" + String(ampereNoise, 2);
 }
+
+String charging()
+{
+  if (getVolts() < 4.25)
+  {
+    chargeOrDischarge(CHARGE);
+    battery(CONNECT);
+    getMeasurement(RESOLUTION, MEASURE);
+  }
+  else
+    state = DISCHARGING;
+  return ",\"voltage\":" + String(voltageMem[MEMORY_SIZE - 1], 2) + ",\"averageVolt\":" + String(getVolts(), 2);
+}
+
+String discharging()
+{
+  if (getVolts() > 3.75)
+  {
+    chargeOrDischarge(DISCHARGE);
+    battery(CONNECT);
+    getMeasurement(RESOLUTION, MEASURE);
+  }
+  else
+    state = FINISHED;
+  return ",\"voltage\":" + String(voltageMem[MEMORY_SIZE - 1], 2) + ",\"averageVolt\":" + String(getVolts(), 2) + ",\"ampere\":" + String(currentMem[MEMORY_SIZE - 1], 2) + ",\"averageAmpere\":" + String(getAmperes(), 2) + ",\"watts\":" + String(voltageMem[MEMORY_SIZE - 1] * currentMem[MEMORY_SIZE - 1], 2);
+}
+
+void finished()
+{
+  battery(DISCONNECT);
+  chargeOrDischarge(DISCHARGE);
+  delay(1000);
+}
+
+//------ Main ------------------------------------------------------------------
 
 void setup()
 {
-  pinMode(LED_BUILTIN, OUTPUT);
-  pinMode(MODE_PIN, INPUT);
-  pinMode(CHARGE_OR_DISCHARGE_PIN, OUTPUT);
-  ACS.autoMidPoint();
+  clearMemory();
   Serial.begin(115200);
   Serial.println("Voltaje máximo: " + String(maxVoltage()));
-  for (size_t i = 0; i < 5; i++)
-    Serial.println(getMeasurement(RESOLUTION, DENOISE));
+  ACS.autoMidPoint();
+  pinMode(LED_BUILTIN, OUTPUT);
+  pinMode(CHARGE_OR_DISCHARGE_PIN, OUTPUT);
+  pinMode(BATTERY_PIN, OUTPUT);
+  battery(DISCONNECT);
+  chargeOrDischarge(DISCHARGE);
 }
 
 void loop()
 {
-  Serial.println(getMeasurement(RESOLUTION, digitalRead(MODE_PIN) ? DENOISE : MEASURE));
-  ticToc(); // this is only for test a relay
+  String message = "{\"mode\":\"";
+  switch (state)
+  {
+  case DENOISE:
+    message += "DENOISE\"" + denoise() + "}";
+    break;
+  case CHARGING:
+    message += "CHARGING\"" + charging() + "}";
+    break;
+  case DISCHARGING:
+    message += "DISCHARGING\"" + discharging() + "}";
+    break;
+  case FINISHED:
+    finished();
+    message += "FINISHED\"}";
+    break;
+  default:
+    break;
+  }
+  Serial.println(message);
 }
