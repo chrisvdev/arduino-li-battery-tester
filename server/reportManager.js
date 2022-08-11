@@ -81,7 +81,7 @@ class ReportManager {
         return {
           status: DISCHARGING,
           percentage: VoltsToPercent(this.currentReport.voltage),
-          mWh: this.getActualMAH(),
+          mAh: this.getActualMAH(),
         };
       case FINISHED:
         return {
