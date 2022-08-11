@@ -1,4 +1,5 @@
-# **An Arduino Lithium Battery tester...**
+# **An Arduino based Lithium Battery Tester...**
+### or ALBT for short :)
 
 This is just a small project for my current job.
 It is about using an Arduino to automate the test of lithium ion batteries.
