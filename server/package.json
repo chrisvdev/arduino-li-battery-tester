@@ -1,0 +1,24 @@
+{
+  "name": "albt-server",
+  "version": "1.0.0",
+  "description": "Server of the ARBT",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/chrisvill2312/arduino-li-battery-tester.git"
+  },
+  "author": "Christian Villegas",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/chrisvill2312/arduino-li-battery-tester/issues"
+  },
+  "homepage": "https://github.com/chrisvill2312/arduino-li-battery-tester#readme",
+  "dependencies": {
+    "express": "^4.18.1",
+    "serialport": "^10.4.0"
+  }
+}

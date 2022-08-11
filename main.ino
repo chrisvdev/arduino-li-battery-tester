@@ -28,7 +28,7 @@ float V1 = 4.5;
 const float R1 = 996500; // 1M
 const float R2 = 99200;  // 100K
 const int VOLTAGE_PIN = A0;
-const float V_ADJUST = 0.82;
+float V_ADJUST = 0.82;
 
 //------ Constants and States ---------------------------------------------------
 
@@ -181,7 +181,12 @@ String charging()
 
 String discharging()
 {
-  if (getVolts() > 3.75)
+  if (V1 != 4.73)
+  {
+    V1 = 4.73;
+    V_ADJUST = 0.9904;
+  }
+  if (getVolts() > 2.5)
   {
     chargeOrDischarge(DISCHARGE);
     battery(CONNECT);
@@ -189,14 +194,19 @@ String discharging()
   }
   else
     state = FINISHED;
-  return ",\"voltage\":" + String(voltageMem[MEMORY_SIZE - 1], 2) + ",\"averageVolt\":" + String(getVolts(), 2) + ",\"ampere\":" + String(currentMem[MEMORY_SIZE - 1], 2) + ",\"averageAmpere\":" + String(getAmperes(), 2) + ",\"watts\":" + String(voltageMem[MEMORY_SIZE - 1] * currentMem[MEMORY_SIZE - 1], 2);
+  return ",\"voltage\":" + String(voltageMem[MEMORY_SIZE - 1], 2) + ",\"averageVolt\":" + String(getVolts(), 2) + ",\"ampere\":" + String(currentMem[MEMORY_SIZE - 1], 2) + ",\"averageAmpere\":" + String(getAmperes(), 2) + ",\"mW\":" + String(voltageMem[MEMORY_SIZE - 1] * currentMem[MEMORY_SIZE - 1], 2);
 }
 
 void finished()
 {
-  battery(DISCONNECT);
-  chargeOrDischarge(DISCHARGE);
-  delay(1000);
+  if (count < 5)
+  {
+    count++;
+    battery(DISCONNECT);
+    chargeOrDischarge(DISCHARGE);
+    delay(1000);
+  }
+  else delay(1000*60*5);
 }
 
 //------ Main ------------------------------------------------------------------
@@ -205,7 +215,7 @@ void setup()
 {
   clearMemory();
   Serial.begin(115200);
-  Serial.println("Voltaje máximo: " + String(maxVoltage()));
+  Serial.println("{\"mode\":\"STARTING\"}");
   ACS.autoMidPoint();
   pinMode(LED_BUILTIN, OUTPUT);
   pinMode(CHARGE_OR_DISCHARGE_PIN, OUTPUT);
