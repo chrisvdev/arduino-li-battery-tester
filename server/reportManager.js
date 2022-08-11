@@ -3,6 +3,18 @@ const DENOISE = "DENOISE";
 const CHARGING = "CHARGING";
 const DISCHARGING = "DISCHARGING";
 const FINISHED = "FINISHED";
+const MAX_VOLTS = 4.25;
+const MIN_VOLTS = 2.5;
+
+function VoltsToPercent(Volts) {
+  let percent = (Volts - MIN_VOLTS) / (MAX_VOLTS - MIN_VOLTS);
+  return parseFloat(
+    (
+      ((percent < 0 ? (percent = 0) : percent) > 1 ? (percent = 1) : percent) *
+      100
+    ).toFixed(2)
+  );
+}
 
 class ReportManager {
   constructor() {
@@ -18,6 +30,8 @@ class ReportManager {
     switch (report.mode) {
       case STARTING:
         this.currentReport.status = STARTING;
+        this.voltage = 0;
+        this.currentReport.mWLog = [];
         break;
       case DENOISE:
         this.currentReport.status = DENOISE;
@@ -28,7 +42,7 @@ class ReportManager {
         break;
       case DISCHARGING:
         this.currentReport.status = DISCHARGING;
-        this.voltage = report.averageVolt;
+        this.currentReport.voltage = report.averageVolt;
         this.currentReport.mWLog.push(report.mW);
         break;
       case FINISHED:
@@ -37,12 +51,16 @@ class ReportManager {
         break;
     }
   }
-  getActualMWH() {
-    return (
-      this.currentReport.mWLog.reduce((a, b) => a + b, 0) /
-      60 /
-      60
-    ).toFixed(2);
+  getActualMAH() {
+    return parseFloat(
+      (
+        this.currentReport.mWLog.reduce((a, b) => a + b, 0) /
+        60 / // 60 seconds per minute
+        60 / // 60 minutes per hour
+        3.7
+      ) // 3.7 is the nominal voltage of the battery
+        .toFixed(2)
+    );
   }
   getStatus() {
     switch (this.currentReport.status) {
@@ -57,18 +75,18 @@ class ReportManager {
       case CHARGING:
         return {
           status: CHARGING,
-          voltage: this.currentReport.voltage,
+          percentage: VoltsToPercent(this.currentReport.voltage),
         };
       case DISCHARGING:
         return {
           status: DISCHARGING,
-          voltage: this.currentReport.voltage,
-          mWh: this.getActualMWH(),
+          percentage: VoltsToPercent(this.currentReport.voltage),
+          mWh: this.getActualMAH(),
         };
       case FINISHED:
         return {
           status: FINISHED,
-          mWh: this.getActualMWH(),
+          mAh: this.getActualMAH(),
         };
       default:
         return this.lastReport;
