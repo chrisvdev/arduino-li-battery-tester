@@ -3,7 +3,7 @@ const BAUD_RATE = 115200;
 const TCP_PORT = 80;
 
 const { SerialPort } = require("serialport");
-const { ReadlineParser } = require('@serialport/parser-readline')
+const { ReadlineParser } = require("@serialport/parser-readline");
 const reportManager = require("./reportManager");
 
 /* server implementation -------------------------------------------------------
@@ -27,10 +27,10 @@ const arduino = new SerialPort(
   }
 );
 
-const parser = arduino.pipe(new ReadlineParser({ delimiter: '\r\n' }))
+const parser = arduino.pipe(new ReadlineParser({ delimiter: "\r\n" }));
 
-parser.on('data', data => reportManager.addReport(JSON.parse(data)));
+parser.on("data", (data) => reportManager.addReport(JSON.parse(data)));
 
 setInterval(() => {
-    console.log(reportManager.getStatus());
-} , 1000);
+  console.log(reportManager.getStatus());
+}, 1000);

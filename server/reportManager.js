@@ -29,7 +29,7 @@ class ReportManager {
       case DISCHARGING:
         this.currentReport.status = DISCHARGING;
         this.voltage = report.averageVolt;
-        this.mWLog.push(report.mW);
+        this.currentReport.mWLog.push(report.mW);
         break;
       case FINISHED:
         break;
@@ -38,7 +38,11 @@ class ReportManager {
     }
   }
   getActualMWH() {
-    return ((this.currentReport.mWLog.reduce((a, b) => a + b, 0)/60)/60).toFixed(2);
+    return (
+      this.currentReport.mWLog.reduce((a, b) => a + b, 0) /
+      60 /
+      60
+    ).toFixed(2);
   }
   getStatus() {
     switch (this.currentReport.status) {
@@ -57,14 +61,14 @@ class ReportManager {
         };
       case DISCHARGING:
         return {
-            status: DISCHARGING,
-            voltage: this.currentReport.voltage,
-            mWh: this.getActualMWH(),
+          status: DISCHARGING,
+          voltage: this.currentReport.voltage,
+          mWh: this.getActualMWH(),
         };
       case FINISHED:
         return {
-            status: FINISHED,
-            mWh: this.getActualMWH(),
+          status: FINISHED,
+          mWh: this.getActualMWH(),
         };
       default:
         return this.lastReport;
