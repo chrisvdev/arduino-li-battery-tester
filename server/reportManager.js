@@ -1,3 +1,5 @@
+const SHA1 = require("crypto-js/sha1");
+
 const STARTING = "STARTING";
 const DENOISE = "DENOISE";
 const CHARGING = "CHARGING";
@@ -19,6 +21,7 @@ function VoltsToPercent(Volts) {
 class ReportManager {
   constructor() {
     this.currentReport = {
+      batteryID: "",
       status: "",
       voltage: 0,
       mWLog: [],
@@ -29,6 +32,14 @@ class ReportManager {
     this.lastReport = report;
     switch (report.mode) {
       case STARTING:
+        const d_t = new Date();
+        let year = d_t.getFullYear();
+        let month = ("0" + (d_t.getMonth() + 1)).slice(-2);
+        let day = ("0" + d_t.getDate()).slice(-2);
+        let hour = d_t.getHours();
+        let minute = d_t.getMinutes();
+        this.currentReport.batteryID = `${day}-${month}-${year}_${hour}:${minute}`;
+        this.currentReport.batteryID = `${SHA1(this.currentReport.batteryID).toString().slice(0,10)}-${this.currentReport.batteryID}`;
         this.currentReport.status = STARTING;
         this.voltage = 0;
         this.currentReport.mWLog = [];
@@ -63,31 +74,27 @@ class ReportManager {
     );
   }
   getStatus() {
+    const report = { batteryID: this.currentReport.batteryID };
     switch (this.currentReport.status) {
       case STARTING:
-        return {
-          status: STARTING,
-        };
+        return { ...report, status: STARTING };
       case DENOISE:
-        return {
-          status: DENOISE,
-        };
+        return { ...report, status: DENOISE };
       case CHARGING:
         return {
+          ...report,
           status: CHARGING,
           percentage: VoltsToPercent(this.currentReport.voltage),
         };
       case DISCHARGING:
         return {
+          ...report,
           status: DISCHARGING,
           percentage: VoltsToPercent(this.currentReport.voltage),
           mAh: this.getActualMAH(),
         };
       case FINISHED:
-        return {
-          status: FINISHED,
-          mAh: this.getActualMAH(),
-        };
+        return { ...report, status: FINISHED, mAh: this.getActualMAH() };
       default:
         return this.lastReport;
     }

@@ -18,6 +18,7 @@
   },
   "homepage": "https://github.com/chrisvill2312/arduino-li-battery-tester#readme",
   "dependencies": {
+    "crypto-js": "^4.1.1",
     "express": "^4.18.1",
     "serialport": "^10.4.0"
   }

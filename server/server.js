@@ -6,14 +6,19 @@ const { SerialPort } = require("serialport");
 const { ReadlineParser } = require("@serialport/parser-readline");
 const reportManager = require("./reportManager");
 
-/* server implementation -------------------------------------------------------
+// server implementation -------------------------------------------------------
 const express = require('express');
 const server = express();
 
 server.use(express.static('public'));
 server.use(express.json());
 server.use(express.urlencoded({ extended: true }));
-*/
+
+server.get('/status',(req,res)=>res.send(reportManager.getStatus()));
+
+server.listen(TCP_PORT,()=>console.log(`Escuchando bajo en puerto ${TCP_PORT}...`));
+
+// Serial port Connection ------------------------------------------------------
 
 const arduino = new SerialPort(
   {
