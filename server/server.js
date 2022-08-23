@@ -1,4 +1,4 @@
-require('dotenv').config({path: __dirname + '/.env'})
+require("dotenv").config({ path: __dirname + "/.env" });
 
 const UART_PORT = "COM6";
 const BAUD_RATE = 115200;
@@ -29,11 +29,11 @@ server.use(express.urlencoded({ extended: true }));
 
 server.get("/status", (req, res) => res.send(reportManager.getStatus()));
 
-server.get('/batteries', async (req,res)=>{});
+server.get("/batteries", async (req, res) => await res.send(Battery.findAll()));
 
-server.get('/battery', async (req,res)=>{});
+server.get("/battery", async (req, res) => {});
 
-server.delete('/battery', async (req,res)=>{});
+server.delete("/battery", async (req, res) => {});
 
 server.listen(TCP_PORT, () =>
   console.log(`Escuchando bajo en puerto ${TCP_PORT}...`)
