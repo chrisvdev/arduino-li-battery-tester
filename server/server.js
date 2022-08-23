@@ -6,6 +6,16 @@ const { SerialPort } = require("serialport");
 const { ReadlineParser } = require("@serialport/parser-readline");
 const reportManager = require("./reportManager");
 
+// Data Base implementation ----------------------------------------------------
+
+const db = require('./db/db');
+const battery = require('./db/models/battery');
+const mWLog = require('./db/models/mWLog');
+
+battery.hasMany(mWLog);
+
+db.sync({force:true});
+
 // server implementation -------------------------------------------------------
 const express = require("express");
 const server = express();
@@ -36,7 +46,7 @@ const arduino = new SerialPort(
 
 const parser = arduino.pipe(new ReadlineParser({ delimiter: "\r\n" }));
 
-reportManager.suscribe(({ id, mWLog, actualMAH }) => {});
+reportManager.suscribeReport(({ id, mWLog, actualMAH }) => {});
 
 parser.on("data", (data) => reportManager.addReport(JSON.parse(data)));
 
