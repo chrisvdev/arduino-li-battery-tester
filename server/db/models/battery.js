@@ -1,7 +1,7 @@
 const { DataTypes } = require("sequelize");
 const db = require("../db");
 
-const battery = db.define("battery", {
+const Battery = db.define("battery", {
   id: {
     type: DataTypes.STRING,
     primaryKey: true,
@@ -12,4 +12,4 @@ const battery = db.define("battery", {
   },
 });
 
-module.exports = battery;
+module.exports = Battery;

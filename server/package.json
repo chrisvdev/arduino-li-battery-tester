@@ -19,6 +19,7 @@
   "homepage": "https://github.com/chrisvill2312/arduino-li-battery-tester#readme",
   "dependencies": {
     "crypto-js": "^4.1.1",
+    "dotenv": "^16.0.1",
     "express": "^4.18.1",
     "pg": "^8.8.0",
     "sequelize": "^6.21.4",
