@@ -27,6 +27,7 @@ class ReportManager {
       mWLog: [],
     };
     this.lastReport = {};
+    this.suscribe = null;
   }
   addReport(report) {
     this.lastReport = report;
@@ -39,7 +40,9 @@ class ReportManager {
         let hour = d_t.getHours();
         let minute = d_t.getMinutes();
         this.currentReport.batteryID = `${day}-${month}-${year}_${hour}:${minute}`;
-        this.currentReport.batteryID = `${SHA1(this.currentReport.batteryID).toString().slice(0,10)}-${this.currentReport.batteryID}`;
+        this.currentReport.batteryID = `${SHA1(this.currentReport.batteryID)
+          .toString()
+          .slice(0, 10)}-${this.currentReport.batteryID}`;
         this.currentReport.status = STARTING;
         this.voltage = 0;
         this.currentReport.mWLog = [];
@@ -57,6 +60,12 @@ class ReportManager {
         this.currentReport.mWLog.push(report.mW);
         break;
       case FINISHED:
+        if (this.suscribe)
+          this.suscribe({
+            id: this.currentReport.batteryID,
+            mWLog: this.currentReport.mWLog,
+            actualMAH: this.getActualMAH(),
+          });
         break;
       default:
         break;
@@ -98,6 +107,12 @@ class ReportManager {
       default:
         return this.lastReport;
     }
+  }
+  suscribeReport(cb) {
+    if (cb instanceof Function) {
+      this.suscribe = cb;
+      return true;
+    } else return false;
   }
 }
 
