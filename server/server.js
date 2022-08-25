@@ -17,7 +17,7 @@ const MWLog = require("./db/models/MWLog");
 Battery.hasMany(MWLog);
 MWLog.belongsTo(Battery);
 
-db.sync({ force: true });
+db.sync({ force: false });
 
 // server implementation -------------------------------------------------------
 
@@ -38,7 +38,7 @@ server.use("/", express.static("../client/build"));
 
 server.get("/status", (req, res) => res.send(reportManager.getStatus()));
 
-server.get("/batteries", async (req, res) => await res.send(Battery.findAll()));
+server.get("/batteries", async (req, res) => res.send( await Battery.findAll()));
 
 server.get("/battery", async (req, res) => {
   try {
@@ -89,13 +89,12 @@ reportManager.suscribeReport(async ({ id, mWLog, actualMAH }) => {
     actualMAH: actualMAH,
   });
   mWLog.forEach(async (mWLog) => {
-    console.log(`AAAArrrrrmamo con : mWLog : ${mWLog} , batteryId : ${battery.id}`);
-    const mWL = await MWLog.create({ mWLog: mWLog , batteryId : battery.id });
+    await MWLog.create({ mWLog: mWLog , batteryId : battery.id });
   });
 });
 
 parser.on("data", (data) => reportManager.addReport(JSON.parse(data)));
 
-setInterval(() => {
+/*setInterval(() => {
   console.log(reportManager.getStatus());
-}, 1000);
+}, 1000);*/

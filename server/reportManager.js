@@ -25,8 +25,9 @@ class ReportManager {
       status: "",
       voltage: 0,
       mWLog: [],
+      reported: false,
     };
-    this.lastReport = {};
+    this.lastReport = { noReport: "Tester not connected" };
     this.suscribe = null;
   }
   addReport(report) {
@@ -46,6 +47,7 @@ class ReportManager {
         this.currentReport.status = STARTING;
         this.voltage = 0;
         this.currentReport.mWLog = [];
+        this.currentReport.reported = false;
         break;
       case DENOISE:
         this.currentReport.status = DENOISE;
@@ -60,12 +62,14 @@ class ReportManager {
         this.currentReport.mWLog.push(report.mW);
         break;
       case FINISHED:
-        if (this.suscribe)
+        if (this.suscribe && !this.currentReport.reported) {
           this.suscribe({
             id: this.currentReport.batteryID,
             mWLog: this.currentReport.mWLog,
             actualMAH: this.getActualMAH(),
           });
+          this.currentReport.reported = true;
+        }
         break;
       default:
         break;
