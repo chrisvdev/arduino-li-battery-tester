@@ -5,8 +5,7 @@ const MWLog = db.define(
   "mWLog",
   {
     mWLog: {
-      type: DataTypes.FLOAT.UNSIGNED,
-      allowNull: false,
+      type: DataTypes.FLOAT
     },
   },
   {

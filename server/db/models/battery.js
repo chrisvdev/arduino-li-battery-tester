@@ -9,7 +9,7 @@ const Battery = db.define(
       primaryKey: true,
     },
     actualMAH: {
-      type: DataTypes.FLOAT.UNSIGNED,
+      type: DataTypes.FLOAT,
       allowNull: false,
     },
   },

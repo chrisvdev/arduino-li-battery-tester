@@ -1,8 +1,8 @@
 require("dotenv").config({ path: __dirname + "/.env" });
 
-const UART_PORT = process.env['UART_PORT'];
-const BAUD_RATE = parseInt(process.env['BAUD_RATE']);
-const TCP_PORT = parseInt(process.env['PORT']);
+const UART_PORT = process.env["UART_PORT"];
+const BAUD_RATE = parseInt(process.env["BAUD_RATE"]);
+const TCP_PORT = parseInt(process.env["PORT"]);
 
 const { SerialPort } = require("serialport");
 const { ReadlineParser } = require("@serialport/parser-readline");
@@ -16,8 +16,6 @@ const MWLog = require("./db/models/MWLog");
 
 Battery.hasMany(MWLog);
 MWLog.belongsTo(Battery);
-MWLog.hasOne(Battery);
-Battery.belongsToMany(MWLog, { through: "testLog" });
 
 db.sync({ force: true });
 
@@ -25,14 +23,16 @@ db.sync({ force: true });
 
 const express = require("express");
 const server = express();
+const cors = require('cors');
 
+server.use(cors());
 server.use(express.static("public"));
 server.use(express.json());
 server.use(express.urlencoded({ extended: true }));
 
 // server request for the Client -----------------------------------------------
 
-server.use('/',express.static('../client/build'));
+server.use("/", express.static("../client/build"));
 
 // server EndPoints ------------------------------------------------------------
 
@@ -84,16 +84,14 @@ const parser = arduino.pipe(new ReadlineParser({ delimiter: "\r\n" }));
 // Logic -----------------------------------------------------------------------
 
 reportManager.suscribeReport(async ({ id, mWLog, actualMAH }) => {
-  await Battery.create({
+  const battery = await Battery.create({
     id: id,
     actualMAH: actualMAH,
   });
-  mWLog.forEach(
-    async (mWLog) =>
-      await Battery.createMWLog({
-        mWLog: mWLog,
-      })
-  );
+  mWLog.forEach(async (mWLog) => {
+    console.log(`AAAArrrrrmamo con : mWLog : ${mWLog} , batteryId : ${battery.id}`);
+    const mWL = await MWLog.create({ mWLog: mWLog , batteryId : battery.id });
+  });
 });
 
 parser.on("data", (data) => reportManager.addReport(JSON.parse(data)));

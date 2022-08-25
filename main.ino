@@ -52,7 +52,7 @@ enum states
   FINISHED,
   MEASURE
 };
-const int MEMORY_SIZE = 10;
+const int MEMORY_SIZE = 60;
 int state = DENOISE;
 float voltageMem[MEMORY_SIZE];
 float currentMem[MEMORY_SIZE];
@@ -206,7 +206,7 @@ void finished()
     chargeOrDischarge(DISCHARGE);
     delay(1000);
   }
-  else delay(1000*60*5);
+  else delay(32767);
 }
 
 //------ Main ------------------------------------------------------------------
