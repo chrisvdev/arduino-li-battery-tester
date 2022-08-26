@@ -1,21 +1,19 @@
 import React from "react";
-import Container from "react-bootstrap/Container";
-import Row from "react-bootstrap/Row";
-import Col from "react-bootstrap/Col";
-import Status from "./components/Status";
-import History from "./components/History";
+import Main from "./containers/main";
+import NavBar from "./components/NavBar";
+import { Routes, Route } from "react-router-dom";
+import Container from "react-bootstrap/esm/Container";
 
 const App = (props) => {
   return (
     <Container>
-      <Row>
-        <Col>
-          <Status />
-        </Col>
-        <Col xs lg="4">
-          <History/>
-        </Col>
-      </Row>
+      <NavBar/>
+      <Routes>
+        <Route path="/" element={<Main />}>
+          <Route index element={<Main/>}/>
+          <Route path="main" element={<Main/>}/>
+        </Route>
+      </Routes>
     </Container>
   );
 };

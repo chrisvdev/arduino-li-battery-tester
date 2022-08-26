@@ -27,7 +27,7 @@ const History = () => {
   useEffect(update, []);
   return (
     <Container>
-      <h3>Battery history</h3>
+      <h5>Battery history</h5>
       <Button onClick={update}>Update</Button>
       <Table striped bordered hover>
         <thead>

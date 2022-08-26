@@ -29,7 +29,7 @@ const Status = () => {
 
   return (
     <Container>
-      <h2>Battery on current test...</h2>
+      <h4>Battery on current test...</h4>
       <Table striped bordered hover>
         <thead>
           <tr>
