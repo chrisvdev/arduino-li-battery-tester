@@ -13,7 +13,10 @@ const NavBar = () => {
     <Navbar bg="light" expand="lg">
       <Container fluid>
         <Navbar.Brand>
-          <TiBatteryCharge style={{ height: "2rem", width: "2rem" }} /> A.L.B.T.
+          <TiBatteryCharge style={{ height: "2rem", width: "2rem" }} />{" "}
+          <Link to="/" className="text-dark" style={{ textDecoration: "none" }}>
+            A.L.B.T.
+          </Link>
         </Navbar.Brand>
         <Navbar.Toggle aria-controls="navbarScroll" />
         <Navbar.Collapse id="navbarScroll">
@@ -23,10 +26,13 @@ const NavBar = () => {
             navbarScroll
           >
             <Nav.Link>
-              <Link to="/" className="text-secondary" style={{textDecoration: 'none'}}>Home</Link>
-            </Nav.Link>
-            <Nav.Link>
-              <Link to="/bat" className="text-secondary" style={{textDecoration: 'none'}}>Battery</Link>
+              <Link
+                to="/bat"
+                className="text-secondary"
+                style={{ textDecoration: "none" }}
+              >
+                Battery
+              </Link>
             </Nav.Link>
             <NavDropdown title="Link" id="navbarScrollingDropdown">
               <NavDropdown.Item href="#action3">Action</NavDropdown.Item>

@@ -9,6 +9,7 @@ const App = (props) => {
   return (
     <Container>
       <NavBar />
+      <Container className="my-4"/>
       <Routes>
         <Route path="/" element={<Main />} />
         <Route path="/bat" element={<BatteryDetail />} />
