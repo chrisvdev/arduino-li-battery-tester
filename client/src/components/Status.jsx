@@ -9,7 +9,7 @@ const Status = () => {
   useEffect(() => {
     setInterval(() => {
       axios
-        .get(`${document.URL}status/` /*'http://localhost/status/'*/, {
+        .get(`http://${document.domain}/status/` /*'http://localhost/status/'*/, {
           method: "GET",
           mode: "no-cors",
           headers: {

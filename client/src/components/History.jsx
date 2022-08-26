@@ -4,11 +4,12 @@ import Button from "react-bootstrap/Button";
 import axios from "axios";
 import { useEffect, useState } from "react";
 import Container from "react-bootstrap/esm/Container";
+import { Link } from "react-router-dom";
 
 const History = () => {
   const update = () => {
     axios
-      .get(`${document.URL}batteries/` /*'http://localhost/batteries/'*/, {
+      .get(`http://${document.domain}/batteries/` /*'http://localhost/batteries/'*/, {
         method: "GET",
         mode: "no-cors",
         headers: {
@@ -42,7 +43,15 @@ const History = () => {
             return (
               <tr>
                 {Object.keys(battery)?.map((key) => {
-                  return <td>{`${battery[key]}`}</td>;
+                  return key === "id" ? (
+                    <td>
+                      <Link
+                        to={`/bat/${battery[key]}`}
+                      >{`${battery[key]}`}</Link>
+                    </td>
+                  ) : (
+                    <td>{`${battery[key]}`}</td>
+                  );
                 })}
               </tr>
             );

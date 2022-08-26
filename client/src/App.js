@@ -1,18 +1,18 @@
 import React from "react";
-import Main from "./containers/main";
 import NavBar from "./components/NavBar";
+import Main from "./containers/main";
+import BatteryDetail from "./components/BatteryDetail";
 import { Routes, Route } from "react-router-dom";
 import Container from "react-bootstrap/esm/Container";
 
 const App = (props) => {
   return (
     <Container>
-      <NavBar/>
+      <NavBar />
       <Routes>
-        <Route path="/" element={<Main />}>
-          <Route index element={<Main/>}/>
-          <Route path="main" element={<Main/>}/>
-        </Route>
+        <Route path="/" element={<Main />} />
+        <Route path="/bat" element={<BatteryDetail />} />
+        <Route path="/bat/:id" element={<BatteryDetail />} />
       </Routes>
     </Container>
   );

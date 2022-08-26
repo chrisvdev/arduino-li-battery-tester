@@ -2,9 +2,10 @@ import React from "react";
 import Container from "react-bootstrap/esm/Container";
 import Nav from "react-bootstrap/Nav";
 import Navbar from "react-bootstrap/Navbar";
-import NavDropdown from 'react-bootstrap/NavDropdown';
-import Form from 'react-bootstrap/Form';
-import Button from 'react-bootstrap/Button';
+import NavDropdown from "react-bootstrap/NavDropdown";
+import Form from "react-bootstrap/Form";
+import Button from "react-bootstrap/Button";
+import { Link } from "react-router-dom";
 import { TiBatteryCharge } from "react-icons/ti";
 
 const NavBar = () => {
@@ -21,8 +22,12 @@ const NavBar = () => {
             style={{ maxHeight: "100px" }}
             navbarScroll
           >
-            <Nav.Link href="/">Home</Nav.Link>
-            <Nav.Link href="#">Link</Nav.Link>
+            <Nav.Link>
+              <Link to="/" className="text-secondary" style={{textDecoration: 'none'}}>Home</Link>
+            </Nav.Link>
+            <Nav.Link>
+              <Link to="/bat" className="text-secondary" style={{textDecoration: 'none'}}>Battery</Link>
+            </Nav.Link>
             <NavDropdown title="Link" id="navbarScrollingDropdown">
               <NavDropdown.Item href="#action3">Action</NavDropdown.Item>
               <NavDropdown.Item href="#action4">
