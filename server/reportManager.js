@@ -62,6 +62,7 @@ class ReportManager {
         this.currentReport.mWLog.push(report.mW);
         break;
       case FINISHED:
+        this.currentReport.status = FINISHED;
         if (this.suscribe && !this.currentReport.reported) {
           this.suscribe({
             id: this.currentReport.batteryID,
