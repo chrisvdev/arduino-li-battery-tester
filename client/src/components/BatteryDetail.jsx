@@ -5,7 +5,7 @@ import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
 import Barcode from "react-barcode";
 import axios from "axios";
-import { useParams } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 
 const BatteryDetail = (props) => {
@@ -32,6 +32,9 @@ const BatteryDetail = (props) => {
       .then((response) => setBattery(response.data))
       .catch((e) => console.error(e));
   }, [pId]);
+  useEffect(() => {
+    if (battery.battery && props.print) window.print();
+  }, [battery]);
   const del = () => {
     axios
       .delete(`http://${document.domain}/battery?id=${id}`)
@@ -54,42 +57,66 @@ const BatteryDetail = (props) => {
   return (
     <>
       {(() => {
-        console.log(battery);
         return battery.battery ? (
           <>
-            <Alert
-              key={alert.type}
-              variant={alert.type}
-              style={alert.type == "none" ? { display: "none" } : {}}
-            >
-              {alert.message}
-            </Alert>
-            {!props.print?<h1>Battery Details</h1>:<Link to={`/bat/${id}`}>Battery Details</Link>}
-            <Barcode value={battery.battery.id} displayValue={false} />
-            <h5>{`ID: ${battery.battery.id} mAh: ${battery.battery.actualMAH}`}</h5>
-            <Button variant="warning" onClick={handleShow}>
-              Delete
-            </Button>
-            <Modal show={show} onHide={handleClose}>
-              <Modal.Header closeButton>
-                <Modal.Title>Warning!</Modal.Title>
-              </Modal.Header>
-              <Modal.Body>Are you sure about delete this battery?</Modal.Body>
-              <Modal.Footer>
-                <Button variant="warning" onClick={handleClose}>
-                  Don't delete!
-                </Button>
-                <Button
-                  variant="danger"
-                  onClick={() => {
-                    del();
-                    handleClose();
-                  }}
+            {props.print ? (
+              <>
+                <Link
+                  to={`/bat/${id}`}
+                  style={{ textDecoration: "none" }}
+                  className="text-dark"
                 >
-                  Delete!
+                  <Barcode
+                    value={battery.battery.id}
+                    displayValue={false}
+                    width={1}
+                    height={30}
+                  />
+                </Link>
+                <h6>{`ID: ${battery.battery.id} mAh: ${battery.battery.actualMAH}`}</h6>
+              </>
+            ) : (
+              <>
+                <Alert
+                  key={alert.type}
+                  variant={alert.type}
+                  style={alert.type == "none" ? { display: "none" } : {}}
+                >
+                  {alert.message}
+                </Alert>
+                <h1>Battery details</h1>
+                <h5>{`ID: ${battery.battery.id} mAh: ${battery.battery.actualMAH}`}</h5>
+                <Button
+                  variant="warning"
+                  onClick={handleShow}
+                  style={props.print ? { display: "none" } : {}}
+                >
+                  Delete
                 </Button>
-              </Modal.Footer>
-            </Modal>
+                <Modal show={show} onHide={handleClose}>
+                  <Modal.Header closeButton>
+                    <Modal.Title>Warning!</Modal.Title>
+                  </Modal.Header>
+                  <Modal.Body>
+                    Are you sure about delete this battery?
+                  </Modal.Body>
+                  <Modal.Footer>
+                    <Button variant="warning" onClick={handleClose}>
+                      Don't delete!
+                    </Button>
+                    <Button
+                      variant="danger"
+                      onClick={() => {
+                        del();
+                        handleClose();
+                      }}
+                    >
+                      Delete!
+                    </Button>
+                  </Modal.Footer>
+                </Modal>
+              </>
+            )}
           </>
         ) : (
           <h1>No details loaded yet...</h1>

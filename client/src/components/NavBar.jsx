@@ -5,10 +5,16 @@ import Navbar from "react-bootstrap/Navbar";
 import NavDropdown from "react-bootstrap/NavDropdown";
 import Form from "react-bootstrap/Form";
 import Button from "react-bootstrap/Button";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { TiBatteryCharge } from "react-icons/ti";
 
 const NavBar = () => {
+  const ref = React.createRef();
+  const navigate = useNavigate();
+  const handleSubmit = (event) => {
+    event.preventDefault();
+    navigate(`/bat/${ref.current.value}`, { replace: true });
+  };
   return (
     <Navbar bg="light" expand="lg">
       <Container fluid>
@@ -27,35 +33,25 @@ const NavBar = () => {
           >
             <Nav.Link>
               <Link
-                to="/bat"
+                to="/history"
                 className="text-secondary"
                 style={{ textDecoration: "none" }}
               >
-                Battery
+                History
               </Link>
             </Nav.Link>
-            <NavDropdown title="Link" id="navbarScrollingDropdown">
-              <NavDropdown.Item href="#action3">Action</NavDropdown.Item>
-              <NavDropdown.Item href="#action4">
-                Another action
-              </NavDropdown.Item>
-              <NavDropdown.Divider />
-              <NavDropdown.Item href="#action5">
-                Something else here
-              </NavDropdown.Item>
-            </NavDropdown>
-            <Nav.Link href="#" disabled>
-              Link
-            </Nav.Link>
           </Nav>
-          <Form className="d-flex">
+          <Form className="d-flex" onSubmit={handleSubmit}>
             <Form.Control
               type="search"
-              placeholder="Search"
+              placeholder="Search battery"
               className="me-2"
               aria-label="Search"
+              ref={ref}
             />
-            <Button variant="outline-success">Search</Button>
+            <Button variant="outline-success" type="submit">
+              Search
+            </Button>
           </Form>
         </Navbar.Collapse>
       </Container>
