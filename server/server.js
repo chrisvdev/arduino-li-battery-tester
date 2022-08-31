@@ -40,16 +40,14 @@ server.get("/status", (req, res) => res.send(reportManager.getStatus()));
 
 server.get("/batteries", async (req, res) => {
   try {
-    res
-      .status(200)
-      .send(
-        req.query.limit
-          ? await Battery.findAll({
-              order: [["createdAt", "DESC"]],
-              limit: parseInt(req.query.limit),
-            })
-          : await Battery.findAll({ order: [["createdAt", "DESC"]] })
-      );
+    res.status(200).send(
+      req.query.limit
+        ? await Battery.findAll({
+            order: [["createdAt", "DESC"]],
+            limit: parseInt(req.query.limit),
+          })
+        : await Battery.findAll({ order: [["createdAt", "DESC"]] })
+    );
   } catch (e) {
     res.status(500).send(e);
   }
@@ -59,7 +57,11 @@ server.get("/battery", async (req, res) => {
   try {
     res.status(200).send({
       battery: await Battery.findOne({ where: { id: req.query.id } }),
-      mWLog: await MWLog.findAll({ where: { batteryId: req.query.id } }),
+      mWLog: await (
+        await MWLog.findAll({ where: { batteryId: req.query.id } })
+      ).map((log) => {
+        return log.mWLog;
+      }),
     });
   } catch (e) {
     res.status(404).send(e);

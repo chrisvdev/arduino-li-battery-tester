@@ -6,9 +6,11 @@ import Barcode from "react-barcode";
 import axios from "axios";
 import { useParams, Link } from "react-router-dom";
 import { useEffect, useState } from "react";
+import { TiStar, TiCancel } from "react-icons/ti";
+import WLogChart from "./WLogChart";
 
 const BatteryDetail = (props) => {
-  const { id } = useParams();
+  const { id, mAh } = useParams();
   const [pId, setPId] = useState("");
   if (id !== pId && pId !== "") setPId(id);
   const [battery, setBattery] = useState({});
@@ -16,6 +18,16 @@ const BatteryDetail = (props) => {
   const [show, setShow] = useState(false);
   const handleClose = () => setShow(false);
   const handleShow = () => setShow(true);
+  const stars = (mAh) => {
+    const ui = [];
+    for (
+      let s = 0;
+      s < Math.ceil(((100 / mAh) * battery.battery.actualMAH - 75) / 5);
+      s++
+    )
+      ui.push(<TiStar />);
+    return ui.length ? ui : <TiCancel />;
+  };
   useEffect(() => {
     axios
       .get(`http://${document.domain}/battery?id=${id}`, {
@@ -73,6 +85,12 @@ const BatteryDetail = (props) => {
                   />
                 </Link>
                 <h6>{`ID: ${battery.battery.id} mAh: ${battery.battery.actualMAH}`}</h6>
+                {mAh && (
+                  <p>
+                    Health {stars(mAh)}
+                    {` (nominal mAh: ${mAh})`}
+                  </p>
+                )}
               </>
             ) : (
               <>
@@ -90,8 +108,9 @@ const BatteryDetail = (props) => {
                   onClick={handleShow}
                   style={props.print ? { display: "none" } : {}}
                 >
-                  Delete
+                  Delete battery
                 </Button>
+                <WLogChart mWLog={battery.mWLog} />
                 <Modal show={show} onHide={handleClose}>
                   <Modal.Header closeButton>
                     <Modal.Title>Warning!</Modal.Title>

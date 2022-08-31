@@ -17,6 +17,7 @@ const App = (props) => {
         <Route path="/bat" element={<Battery />} />
         <Route path="/bat/:id" element={<Battery />} />
         <Route path="/print/:id" element={<Print />} />
+        <Route path="/print/:id/:mAh" element={<Print />} />
         <Route path="/history" element={<AllHistory />} />
       </Routes>
     </Container>

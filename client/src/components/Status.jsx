@@ -3,6 +3,7 @@ import Table from "react-bootstrap/Table";
 import axios from "axios";
 import { useEffect, useState } from "react";
 import Container from "react-bootstrap/esm/Container";
+import WLogChart from "./WLogChart";
 
 const Status = () => {
   const [st, setSt] = useState({});
@@ -53,6 +54,7 @@ const Status = () => {
           </tr>
         </tbody>
       </Table>
+      {st.mWLog && <WLogChart mWLog={st.mWLog}/>}
     </Container>
   );
 };
