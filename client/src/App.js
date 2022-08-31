@@ -1,10 +1,11 @@
 import React from "react";
+import Container from "react-bootstrap/esm/Container";
+import { Routes, Route } from "react-router-dom";
 import NavBar from "./components/NavBar";
 import Main from "./containers/main";
 import Battery from "./containers/Battery";
-import { Routes, Route } from "react-router-dom";
-import Container from "react-bootstrap/esm/Container";
 import Print from "./containers/Print";
+import AllHistory from "./containers/AllHistory";
 
 const App = (props) => {
   return (
@@ -16,6 +17,7 @@ const App = (props) => {
         <Route path="/bat" element={<Battery />} />
         <Route path="/bat/:id" element={<Battery />} />
         <Route path="/print/:id" element={<Print />} />
+        <Route path="/history" element={<AllHistory />} />
       </Routes>
     </Container>
   );

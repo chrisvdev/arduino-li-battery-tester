@@ -1,5 +1,4 @@
 import React from "react";
-import Container from "react-bootstrap/esm/Container";
 import Alert from "react-bootstrap/Alert";
 import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
@@ -80,7 +79,7 @@ const BatteryDetail = (props) => {
                 <Alert
                   key={alert.type}
                   variant={alert.type}
-                  style={alert.type == "none" ? { display: "none" } : {}}
+                  style={alert.type === "none" ? { display: "none" } : {}}
                 >
                   {alert.message}
                 </Alert>

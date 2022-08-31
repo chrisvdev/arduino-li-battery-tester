@@ -13,7 +13,7 @@ const Main = () => {
           <Status />
         </Col>
         <Col xs lg="4">
-          <History />
+          <History limit={7} />
         </Col>
       </Row>
     </Container>

@@ -23,7 +23,7 @@ db.sync({ force: false });
 
 const express = require("express");
 const server = express();
-const cors = require('cors');
+const cors = require("cors");
 
 server.use(cors());
 server.use(express.static("public"));
@@ -38,7 +38,22 @@ server.use("/", express.static("../client/build"));
 
 server.get("/status", (req, res) => res.send(reportManager.getStatus()));
 
-server.get("/batteries", async (req, res) => res.send( await Battery.findAll()));
+server.get("/batteries", async (req, res) => {
+  try {
+    res
+      .status(200)
+      .send(
+        req.query.limit
+          ? await Battery.findAll({
+              order: [["createdAt", "DESC"]],
+              limit: parseInt(req.query.limit),
+            })
+          : await Battery.findAll({ order: [["createdAt", "DESC"]] })
+      );
+  } catch (e) {
+    res.status(500).send(e);
+  }
+});
 
 server.get("/battery", async (req, res) => {
   try {
@@ -89,7 +104,7 @@ reportManager.suscribeReport(async ({ id, mWLog, actualMAH }) => {
     actualMAH: actualMAH,
   });
   mWLog.forEach(async (mWLog) => {
-    await MWLog.create({ mWLog: mWLog , batteryId : battery.id });
+    await MWLog.create({ mWLog: mWLog, batteryId: battery.id });
   });
 });
 

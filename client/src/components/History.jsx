@@ -6,19 +6,23 @@ import { useEffect, useState } from "react";
 import Container from "react-bootstrap/esm/Container";
 import { Link } from "react-router-dom";
 
-const History = () => {
+const History = (props) => {
+  const { limit } = props;
   const update = () => {
     axios
-      .get(`http://${document.domain}/batteries/` /*'http://localhost/batteries/'*/, {
-        method: "GET",
-        mode: "no-cors",
-        headers: {
-          "Access-Control-Allow-Origin": "*",
-          "Content-Type": "application/json",
-        },
-        withCredentials: true,
-        credentials: "same-origin",
-      })
+      .get(
+        `http://${document.domain}/batteries${limit ? `?limit=${limit}` : ""}/`,
+        {
+          method: "GET",
+          mode: "no-cors",
+          headers: {
+            "Access-Control-Allow-Origin": "*",
+            "Content-Type": "application/json",
+          },
+          withCredentials: true,
+          credentials: "same-origin",
+        }
+      )
       .then((response) => setHs(response.data))
       .catch((error) => {
         console.error(error);
@@ -28,7 +32,11 @@ const History = () => {
   useEffect(update, []);
   return (
     <Container>
-      <h5>Battery history</h5>
+      {props.limit ? (
+        <h5>{`Last ${props.limit} batteries tested...`}</h5>
+      ) : (
+        <h2>Battery history</h2>
+      )}
       <Button onClick={update}>Update</Button>
       <Table striped bordered hover>
         <thead>

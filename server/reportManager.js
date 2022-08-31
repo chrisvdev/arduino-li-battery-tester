@@ -105,10 +105,16 @@ class ReportManager {
           ...report,
           status: DISCHARGING,
           percentage: VoltsToPercent(this.currentReport.voltage),
+          mWLog: this.currentReport.mWLog,
           mAh: this.getActualMAH(),
         };
       case FINISHED:
-        return { ...report, status: FINISHED, mAh: this.getActualMAH() };
+        return {
+          ...report,
+          status: FINISHED,
+          mWLog: this.currentReport.mWLog,
+          mAh: this.getActualMAH(),
+        };
       default:
         return this.lastReport;
     }
