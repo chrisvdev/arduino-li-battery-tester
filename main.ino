@@ -40,6 +40,7 @@ const int NC = HIGH;
 const float ABSOLUTE = 1.0;
 const float TOLERANCE = (ABSOLUTE + .5);
 const int RESOLUTION = 100;
+const int DENOISE_LIMIT = 5;
 const bool CHARGE = true;
 const bool DISCHARGE = false;
 const bool CONNECT = true;
@@ -56,10 +57,12 @@ const int MEMORY_SIZE = 60;
 int state = DENOISE;
 float voltageMem[MEMORY_SIZE];
 float currentMem[MEMORY_SIZE];
+uint16_t midPoint[DENOISE_LIMIT];
 float voltageNoise = 0;
 float ampereNoise = 0;
 int count = 0;
 bool ledState = false;
+bool batteryCharged = false;
 
 //------ Functions --------------------------------------------------------------
 
@@ -108,6 +111,8 @@ void clearMemory()
     voltageMem[i] = 0;
     currentMem[i] = 0;
   }
+  voltageNoise = 0;
+  ampereNoise = 0;
 }
 
 float volts() { return (analogRead(VOLTAGE_PIN) * (V1 / 1023.0)) / (R2 / (R1 + R2)); }
@@ -129,7 +134,6 @@ void getMeasurement(int resolution, int mode)
     blink();
     avgV += getVoltage();
     avgA += getAmperage();
-    delay((1000 / resolution) - 1);
   }
   avgV /= resolution;
   avgA /= resolution;
@@ -151,32 +155,68 @@ void getMeasurement(int resolution, int mode)
   }
 }
 
+uint16_t getAverageMidPoint()
+{
+  uint16_t total = 0;
+  for (size_t i = 0; i < DENOISE_LIMIT; i++)
+  {
+    total += midPoint[i];
+  }
+  return total / DENOISE_LIMIT;
+}
+
 String denoise()
 {
-  if (count < 5)
+  if (count < DENOISE_LIMIT * 2)
   {
-    getMeasurement(RESOLUTION, DENOISE);
+    if (count == 0)
+    {
+      battery(DISCONNECT);
+      chargeOrDischarge(DISCHARGE);
+      clearMemory();
+    }
+    if (count < DENOISE_LIMIT)
+    {
+      ACS.autoMidPoint();
+      midPoint[count] = ACS.getMidPoint();
+    }
+    else
+    {
+      if (count == DENOISE_LIMIT)
+        ACS.setMidPoint(getAverageMidPoint());
+      getMeasurement(RESOLUTION, DENOISE);
+    }
     count++;
   }
   else
   {
     count = 0;
-    state = CHARGING;
+    state = batteryCharged ? DISCHARGING : CHARGING;
   }
   return ",\"voltageNoise\":" + String(voltageNoise) + ",\"ampereNoise\":" + String(ampereNoise, 2);
 }
 
+bool batteryWorking()
+{
+  float volts = getVolts();
+  float amps = currentMem[MEMORY_SIZE - 1];
+  return ((voltageMem[0] == 0) || (((volts > 2) && (volts < 5)) && (amps > 0)));
+}
+
 String charging()
 {
-  if (getVolts() < 4.25)
+  if (batteryWorking())
   {
     chargeOrDischarge(CHARGE);
     battery(CONNECT);
     getMeasurement(RESOLUTION, MEASURE);
   }
   else
-    state = DISCHARGING;
-  return ",\"voltage\":" + String(voltageMem[MEMORY_SIZE - 1], 2) + ",\"averageVolt\":" + String(getVolts(), 2);
+  {
+    batteryCharged = true;
+    state = DENOISE;
+  }
+  return ",\"voltage\":" + String(voltageMem[MEMORY_SIZE - 1], 2) + ",\"averageVolt\":" + String(getVolts(), 2) + ",\"ampere\":" + String(currentMem[MEMORY_SIZE - 1], 2) + ",\"averageAmpere\":" + String(getAmperes(), 2) + ",\"mW\":" + String(voltageMem[MEMORY_SIZE - 1] * currentMem[MEMORY_SIZE - 1], 2);
 }
 
 String discharging()
@@ -186,7 +226,7 @@ String discharging()
     V1 = 4.73;
     V_ADJUST = 0.9904;
   }
-  if (getVolts() > 2.5)
+  if (batteryWorking())
   {
     chargeOrDischarge(DISCHARGE);
     battery(CONNECT);
@@ -206,7 +246,8 @@ void finished()
     chargeOrDischarge(DISCHARGE);
     delay(1000);
   }
-  else delay(32767);
+  else
+    delay(32767);
 }
 
 //------ Main ------------------------------------------------------------------
@@ -220,8 +261,10 @@ void setup()
   pinMode(LED_BUILTIN, OUTPUT);
   pinMode(CHARGE_OR_DISCHARGE_PIN, OUTPUT);
   pinMode(BATTERY_PIN, OUTPUT);
-  battery(DISCONNECT);
-  chargeOrDischarge(DISCHARGE);
+  pinMode(8, OUTPUT);
+  digitalWrite(8, HIGH);
+  pinMode(9, OUTPUT);
+  digitalWrite(9, LOW);
 }
 
 void loop()
@@ -246,4 +289,5 @@ void loop()
     break;
   }
   Serial.println(message);
+  delay(990);
 }

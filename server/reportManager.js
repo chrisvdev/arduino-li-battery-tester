@@ -30,8 +30,9 @@ class ReportManager {
     this.lastReport = { noReport: "Tester not connected" };
     this.suscribe = null;
   }
-  addReport(report) {
-    this.lastReport = report;
+  addReport(report, verbose) {
+    this.lastReport = { ...this.lastReport, ...report };
+    verbose || console.log(this.lastReport);
     switch (report.mode) {
       case STARTING:
         const d_t = new Date();
@@ -48,6 +49,7 @@ class ReportManager {
         this.voltage = 0;
         this.currentReport.mWLog = [];
         this.currentReport.reported = false;
+        this.lastReport = {};
         break;
       case DENOISE:
         this.currentReport.status = DENOISE;

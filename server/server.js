@@ -110,7 +110,7 @@ reportManager.suscribeReport(async ({ id, mWLog, actualMAH }) => {
   });
 });
 
-parser.on("data", (data) => reportManager.addReport(JSON.parse(data)));
+parser.on("data", (data) => reportManager.addReport(JSON.parse(data,true)));
 
 /*setInterval(() => {
   console.log(reportManager.getStatus());
