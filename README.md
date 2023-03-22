@@ -1,7 +1,7 @@
 # **An Arduino based Lithium Battery Tester...**
 ### or ALBT for short :)
 
-This is just a small project for my current job.
-It is about using an Arduino to automate the test of lithium ion batteries.
+This is a full-stack application made with React.JS, Node.JS and PostgreSQL to generate and save lithium-ion battery performance reports.
+The application gets the data directly from the RS232 port of an Arduino programmed to perform the tests automatically.
 
-The idea is that the Arduino tests them and a Node.js server takes the data through the serial port to make the reports.
+It's a tool I use at work (or used to use depending on how far in the future you are reading this).
